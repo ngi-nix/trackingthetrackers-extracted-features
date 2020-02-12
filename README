@@ -1,0 +1,6 @@
+
+This are various extractions from all the APKs in /data/malware-apks.
+The data files are in dirs based on the /data/malware-apks tree and
+named after the APK.  The script to run the whole process is next to
+the dir named *-run.
+
