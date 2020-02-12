@@ -1,0 +1,6 @@
+
+Unlike other data sources in _extracted-features_, the virustotal JSON
+files follow the fdroid APK naming scheme, e.g.:
+
+${ApplicationID}_${versionCode}_${sha256}.json
+com.fastaccess.github_430_064bee6cb62ce26b7d6090e3f52c889d5cbd2e0ff2cd066efd8cc4b061f1a8df.json

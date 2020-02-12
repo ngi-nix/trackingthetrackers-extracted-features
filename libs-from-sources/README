@@ -1,0 +1,7 @@
+
+This is a simple pattern matching of gradle library lines.  There is
+one set of all the library lines found, it can be used using the key
+'set'.  The rest of the entries are the Application ID of the app that
+was scraped, then there are sub-entries for each file that was
+scrapes.  Those sub-entries include lists of libraries found.
+
