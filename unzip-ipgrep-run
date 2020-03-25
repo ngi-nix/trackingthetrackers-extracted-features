@@ -16,7 +16,7 @@ for f in /data/malware-apks/androzoo/top10ish-per-tracker-sdk/*.apk \
     # use -c rather than -p to send the filenames to ipgrep
     { unzip -c "$f" | python3 /data/malware-apks/code/jedisctl/ipgrep/ipgrep.py > "$output" 2>&1; } &
     i=$((i+1))
-    if [ $i -gt 30 ]; then
+    if [ $i -gt 90 ]; then
 	date
 	wait
 	i=0
