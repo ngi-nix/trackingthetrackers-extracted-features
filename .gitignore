@@ -1,5 +1,7 @@
 androzoo/
+/androzoo-style-listing/
 apkparser-axml2xml
+/faup-hosts/
 gradle-dependency-check-reports
 ipgrep-on-zip
 unzip-faup

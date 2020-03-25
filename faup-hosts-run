@@ -1,0 +1,13 @@
+#! /bin/bash
+
+in_path=/data/ttt-apks/extracted-features/unzip-faup/ikarus/adware 
+
+# create parent directories
+out_path=$(echo $in_path | sed 's/unzip-faup/faup-hosts/')
+mkdir -p $out_path
+
+for f in $in_path/*.csv; do
+	target=$(echo $f | sed 's/unzip-faup/faup-hosts/')
+	# extract host, remove junk from start of line, e.g. whitespace
+	cut -d ',' -f 6 $f | sed 's/^[^a-zA-Z0-9]*//g' | sort | uniq > $target
+done
