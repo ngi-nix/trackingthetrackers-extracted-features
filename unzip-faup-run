@@ -1,6 +1,19 @@
-#!/bin/bash -x
+#!/bin/bash -ex
 
 export LC_ALL=C.UTF-8
+
+faup=~/code/stricaud/faup/build/src/tools/faup
+
+if [ ! -e $faup ]; then
+    echo faup not installed, rsyncing from gcc149
+    rsync -axvz --progress \
+	  fdroid@gcc149.osuosl.org:/data/ttt-apks/extracted-features/unzip-faup/ \
+	  /data/ttt-apks/extracted-features/unzip-faup/
+    rsync -axvz --progress --delete-after --dry-run \
+	  fdroid@gcc149.osuosl.org:/data/ttt-apks/extracted-features/unzip-faup/ \
+	  /data/ttt-apks/extracted-features/unzip-faup/
+    exit
+fi
 
 i=0
 for f in /data/malware-apks/androzoo/top10ish-per-tracker-sdk/*.apk \
@@ -12,7 +25,7 @@ for f in /data/malware-apks/androzoo/top10ish-per-tracker-sdk/*.apk \
     test -e "$output" && continue
     test -d "$(dirname $output)" || mkdir -p "$(dirname $output)"
     # use -c rather than -p to send the filenames to faup
-    { unzip -c "$f" | strings | grep --text -Eo '[^ \t<>#()]{0,4000}\w\.\w\w[^ \t<>#()]{0,4000}' |  ~/code/stricaud/faup/build/src/tools/faup -p | grep --text -v -e ',no_tld$' -e ',unknown_tld$' | sort -u > "$output" 2>&1; } &
+    { unzip -c "$f" | strings | grep --text -Eo '[^ \t<>#()]{0,4000}\w\.\w\w[^ \t<>#()]{0,4000}' | $faup -p | grep --text -v -e ',no_tld$' -e ',unknown_tld$' | sort -u > "$output" 2>&1; } &
     i=$((i+1))
     if [ $i -gt 60 ]; then
 	date
