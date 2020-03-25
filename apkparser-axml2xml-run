@@ -3,7 +3,7 @@
 # run https://github.com/avast/apkparser on the whole collection
 
 i=0
-for f in `find /data/ttt-apks/ -type f -name \*.apk` \
+for f in /data/malware-apks/androzoo/top10ish-per-tracker-sdk/*.apk \
      /data/malware-apks/ikarus/*/*_[0-9]* \
      /data/malware-apks/github.com/*/*/*/*/*/*.apk; do
     outpath=${f#/data/malware-apks/}
