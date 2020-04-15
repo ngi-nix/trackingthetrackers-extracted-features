@@ -12,7 +12,7 @@ class Encoder(json.JSONEncoder):
     dict_keys = type({}.keys())
     def default(self, obj):
         if isinstance(obj, set) or isinstance(obj, self.dict_keys):
-            return list(obj)
+            return sorted(obj)
         return super().default(obj)
 
 
@@ -22,11 +22,13 @@ output = dict()
 output['errors'] = dict()
 d = dict()
 output['meta-data'] = d
-keys = set()
+attributes = set()
+output['attributes'] = attributes
 basedir = os.path.dirname(__file__)
 datadir = os.path.join(basedir, 'apkparser-axml2xml')
 outputdir = os.path.join(basedir, os.path.basename(__file__).replace('-run', ''))
 os.makedirs(outputdir, exist_ok=True)
+attributes_file = os.path.join(outputdir, 'attributes.json')
 names_file = os.path.join(outputdir, 'names.json')
 output_file = os.path.join(outputdir, 'meta-data.json')
 
@@ -39,7 +41,7 @@ for root, dirs, files in os.walk(datadir):
             for meta_data in META_DATA_REGEX.findall(fp.read()):
                 bs = BeautifulSoup(meta_data, 'lxml')
                 item = bs.find('meta-data')
-                keys.update(item.attrs)
+                attributes.update(item.attrs)
                 line = ''
                 if 'android:name' not in item.attrs.keys():
                     if f not in output['errors']:
@@ -63,5 +65,7 @@ for root, dirs, files in os.walk(datadir):
         i = 0
         with open(output_file, 'w') as fp:
             json.dump(output, fp, indent=2, sort_keys=True, cls=Encoder)
+with open(attributes_file, 'w') as fp:
+    json.dump(sorted(attributes), fp, indent=2)
 with open(names_file, 'w') as fp:
-    json.dump(sorted(d.keys()), fp, indent=2, sort_keys=True, cls=Encoder)
+    json.dump(sorted(d.keys()), fp, indent=2)
