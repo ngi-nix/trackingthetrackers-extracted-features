@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+#
+# extract <meta-data> elements from AndroidManifest.xml to look for
+# API Key idenfiers and other interesting tidbits.
+# https://github.com/Exodus-Privacy/etip/issues/62
 
 import collections
 import json
@@ -37,7 +41,8 @@ i = 0
 for root, dirs, files in os.walk(datadir):
     print(root)
     for f in files:
-        with open(os.path.join(root, f)) as fp:
+        path = os.path.join(root, f)
+        with open(path) as fp:
             for meta_data in META_DATA_REGEX.findall(fp.read()):
                 bs = BeautifulSoup(meta_data, 'lxml')
                 item = bs.find('meta-data')
@@ -52,6 +57,9 @@ for root, dirs, files in os.walk(datadir):
                 name = item.attrs['android:name']
                 if name not in d:
                     d[name] = dict()
+                if 'apks' not in d[name]:
+                    d[name]['apks'] = set()
+                d[name]['apks'].add(path[len(basedir) + 20:-20])  # relative path and rstrip .AndroidManifest.xml
                 if 'android:resource' in item.attrs:
                     if 'resources' not in d[name]:
                         d[name]['resources'] = set()
@@ -65,7 +73,12 @@ for root, dirs, files in os.walk(datadir):
         i = 0
         with open(output_file, 'w') as fp:
             json.dump(output, fp, indent=2, sort_keys=True, cls=Encoder)
+with open(output_file, 'w') as fp:
+    json.dump(output, fp, indent=2, sort_keys=True, cls=Encoder)
 with open(attributes_file, 'w') as fp:
     json.dump(sorted(attributes), fp, indent=2)
+names = dict()
+for k, v in d.items():
+    names[k] = sorted(v['apks'])
 with open(names_file, 'w') as fp:
-    json.dump(sorted(d.keys()), fp, indent=2)
+    json.dump(names, fp, indent=2, sort_keys=True)
