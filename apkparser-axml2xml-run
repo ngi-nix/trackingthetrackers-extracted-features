@@ -5,6 +5,8 @@
 i=0
 for f in /data/malware-apks/androzoo/top10ish-per-tracker-sdk/*.apk \
              /data/malware-apks/ikarus/*/*_[0-9]* \
+             /data/malware-apks/random-google-play/*.apk \
+             /data/malware-apks/covid-19-set/*/*.apk \
              /data/malware-apks/github.com/*/*/*/*/*/*.apk; do
     outpath=${f#/data/malware-apks/}
     outpath=${outpath#/data/ttt-apks/}
