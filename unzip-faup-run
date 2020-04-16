@@ -7,11 +7,11 @@ faup=~/code/stricaud/faup/build/src/tools/faup
 if [ ! -e $faup ]; then
     echo faup not installed, rsyncing from gcc149
     rsync -axvz --progress \
-	  fdroid@gcc149.osuosl.org:/data/ttt-apks/extracted-features/unzip-faup/ \
-	  /data/ttt-apks/extracted-features/unzip-faup/
+          fdroid@gcc149.osuosl.org:/data/ttt-apks/extracted-features/unzip-faup/ \
+          /data/ttt-apks/extracted-features/unzip-faup/
     rsync -axvz --progress --delete-after --dry-run \
-	  fdroid@gcc149.osuosl.org:/data/ttt-apks/extracted-features/unzip-faup/ \
-	  /data/ttt-apks/extracted-features/unzip-faup/
+          fdroid@gcc149.osuosl.org:/data/ttt-apks/extracted-features/unzip-faup/ \
+          /data/ttt-apks/extracted-features/unzip-faup/
     exit
 fi
 
@@ -28,8 +28,8 @@ for f in /data/malware-apks/androzoo/top10ish-per-tracker-sdk/*.apk \
     { unzip -c "$f" | strings | grep --text -Eo '[^ \t<>#()]{0,4000}\w\.\w\w[^ \t<>#()]{0,4000}' | $faup -p | grep --text -v -e ',no_tld$' -e ',unknown_tld$' | sort -u > "$output" 2>&1; } &
     i=$((i+1))
     if [ $i -gt 60 ]; then
-	date
-	wait
-	i=0
+        date
+        wait
+        i=0
     fi
 done

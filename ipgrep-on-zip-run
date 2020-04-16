@@ -6,8 +6,8 @@ export LC_ALL=C.UTF-8
 
 i=0
 for f in /data/malware-apks/androzoo/top10ish-per-tracker-sdk/*.apk \
-         /data/malware-apks/ikarus/*/*_[0-9]* \
-         /data/malware-apks/github.com/*/*/*/*/*/*.apk; do
+             /data/malware-apks/ikarus/*/*_[0-9]* \
+             /data/malware-apks/github.com/*/*/*/*/*/*.apk; do
     outpath=${f#/data/malware-apks/}
     outpath=${outpath#/data/ttt-apks/}
     output=/data/ttt-apks/extracted-features/ipgrep/${outpath}.ipgrep
