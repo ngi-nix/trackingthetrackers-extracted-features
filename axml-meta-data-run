@@ -34,6 +34,7 @@ outputdir = os.path.join(basedir, os.path.basename(__file__).replace('-run', '')
 os.makedirs(outputdir, exist_ok=True)
 attributes_file = os.path.join(outputdir, 'attributes.json')
 names_file = os.path.join(outputdir, 'names.json')
+names_with_apk_paths_file = os.path.join(outputdir, 'names-with-apk-paths.json')
 output_file = os.path.join(outputdir, 'meta-data.json')
 
 print('Scanning', datadir)
@@ -78,8 +79,10 @@ with open(output_file, 'w') as fp:
     json.dump(output, fp, indent=2, sort_keys=True, cls=Encoder)
 with open(attributes_file, 'w') as fp:
     json.dump(sorted(attributes), fp, indent=2)
-names = dict()
-for k, v in d.items():
-    names[k] = sorted(v['apks'])
 with open(names_file, 'w') as fp:
-    json.dump(names, fp, indent=2, sort_keys=True)
+    json.dump(sorted(d.keys()), fp, indent=2)
+names_with_apk_paths = dict()
+for k, v in d.items():
+    names_with_apk_paths[k] = sorted(v['apks'])
+with open(names_with_apk_paths_file, 'w') as fp:
+    json.dump(names_with_apk_paths_file, fp, indent=2, sort_keys=True)
