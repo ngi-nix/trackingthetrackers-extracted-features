@@ -42,6 +42,7 @@ for root, dirs, files in os.walk(datadir):
     print(root)
     for f in files:
         path = os.path.join(root, f)
+        apkpath = path[len(basedir) + 20:-20]
         with open(path) as fp:
             for meta_data in META_DATA_REGEX.findall(fp.read()):
                 bs = BeautifulSoup(meta_data, 'lxml')
@@ -50,8 +51,8 @@ for root, dirs, files in os.walk(datadir):
                 line = ''
                 if 'android:name' not in item.attrs.keys():
                     if f not in output['errors']:
-                        output['errors'][f] = []
-                    output['errors'][f].append(meta_data)
+                        output['errors'][apkpath] = []
+                    output['errors'][apkpath].append(meta_data)
                     print('ERROR:', f, '<meta-data/> has no android:name:\n', meta_data)
                     continue
                 name = item.attrs['android:name']
@@ -59,7 +60,7 @@ for root, dirs, files in os.walk(datadir):
                     d[name] = dict()
                 if 'apks' not in d[name]:
                     d[name]['apks'] = set()
-                d[name]['apks'].add(path[len(basedir) + 20:-20])  # relative path and rstrip .AndroidManifest.xml
+                d[name]['apks'].add(apkpath)  # relative path and rstrip .AndroidManifest.xml
                 if 'android:resource' in item.attrs:
                     if 'resources' not in d[name]:
                         d[name]['resources'] = set()
