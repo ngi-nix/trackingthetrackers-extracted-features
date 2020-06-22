@@ -1,0 +1,27 @@
+#!/bin/bash -ex
+
+export LC_ALL=C.UTF-8
+export JAVA_HOME=/data/malware-apks/jdk8
+export ANDROID_SDK=/data/malware-apks/android-sdk
+
+i=0
+for f in /data/malware-apks/androzoo/top10ish-per-tracker-sdk/*.apk \
+	     /data/malware-apks/known-good/f-droid.org/*/*.apk \
+             /data/malware-apks/ikarus/*/*_[0-9]* \
+             /data/malware-apks/random-google-play/*.apk \
+             /data/malware-apks/covid-19-set/*/*.apk \
+             /data/malware-apks/github.com/*/*/*/*/*/*.apk; do
+    outpath=${f#/data/malware-apks/}
+    outpath=${outpath#/data/ttt-apks/}
+    output=/data/ttt-apks/extracted-features/apkanalyzer-dex-packages/${outpath}.dex-dump
+    test -e "$output" && continue
+    test -d "$(dirname $output)" || mkdir -p "$(dirname $output)"
+    { nice -n 19 ionice -c3 $ANDROID_SDK/tools/bin/apkanalyzer dex packages --defined-only $f > $output; } &
+
+    i=$((i+1))
+    if [ $i -gt `nproc` ]; then
+        date
+        wait
+        i=0
+    fi
+done
