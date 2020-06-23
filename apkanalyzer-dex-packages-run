@@ -13,10 +13,10 @@ for f in /data/malware-apks/androzoo/top10ish-per-tracker-sdk/*.apk \
              /data/malware-apks/github.com/*/*/*/*/*/*.apk; do
     outpath=${f#/data/malware-apks/}
     outpath=${outpath#/data/ttt-apks/}
-    output=/data/ttt-apks/extracted-features/apkanalyzer-dex-packages/${outpath}.dex-dump
+    output=/data/ttt-apks/extracted-features/apkanalyzer-dex-packages/${outpath}.dex-dump.gz
     test -e "$output" && continue
     test -d "$(dirname $output)" || mkdir -p "$(dirname $output)"
-    { nice -n 19 ionice -c3 $ANDROID_SDK/tools/bin/apkanalyzer dex packages --defined-only $f > $output; } &
+    { nice -n 19 ionice -c3 $ANDROID_SDK/tools/bin/apkanalyzer dex packages --defined-only $f | gzip -9 > $output; } &
 
     i=$((i+1))
     if [ $i -gt `nproc` ]; then
