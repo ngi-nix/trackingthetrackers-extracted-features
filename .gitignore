@@ -7,6 +7,7 @@ apkparser-axml2xml
 /faup-hosts/
 gradle-dependency-check-reports
 ipgrep-on-zip
+/ripgrep-faup/
 unzip-faup
 unzip-ipgrep
 virustotal
