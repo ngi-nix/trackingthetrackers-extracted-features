@@ -25,11 +25,18 @@ class Encoder(json.JSONEncoder):
 APK_ROOT_DIR = '/data/malware-apks'
 
 output = dict()
+output['reserved-words'] = ('attributes', 'errors', 'meta-data', 'receivers')
 output['errors'] = dict()
 d = dict()
 output['meta-data'] = d
 attributes = set()
 output['attributes'] = attributes
+receivers = {
+    'attributes': set(),
+    'names': set(),
+    'intent-filter-action-names': set(),
+}
+output['receivers'] = receivers
 basedir = os.path.dirname(__file__)
 datadir = os.path.join(basedir, 'apkparser-axml2xml')
 outputdir = os.path.join(basedir, os.path.basename(__file__).replace('-run', ''))
@@ -38,6 +45,7 @@ attributes_file = os.path.join(outputdir, 'attributes.json')
 names_file = os.path.join(outputdir, 'names.json')
 names_with_apk_paths_file = os.path.join(outputdir, 'names-with-apk-paths.json')
 output_file = os.path.join(outputdir, 'meta-data.json')
+receivers_file = os.path.join(outputdir, 'receivers.json')
 
 print('Scanning', datadir)
 i = 0
@@ -56,6 +64,7 @@ for root, dirs, files in os.walk(datadir):
                 'mtime': statinfo.st_mtime,
             },
             'meta-data': [],
+            'receiver': [],
         }
         with open(path) as fp:
             bs = BeautifulSoup(fp.read(), 'lxml')
@@ -89,6 +98,19 @@ for root, dirs, files in os.walk(datadir):
                     meta_data_output_dict['value'] = value
                     d[name]['values'].add(value)
 
+            for receiver in bs.find_all('receiver'):
+                receivers['attributes'].update(receiver.attrs)
+                if 'android:name' in receiver.attrs:
+                    receivers['names'].add(receiver.attrs['android:name'])
+                for intent_filter in receiver.find_all('intent-filter'):
+                    for action in intent_filter.find_all('action'):
+                        if 'android:name' in action.attrs:
+                            receivers['intent-filter-action-names'].add(action.attrs['android:name'])
+                            axml_meta_data_output['receiver'].append({
+                                'name': receiver.attrs['android:name'],
+                                'intent-filter-action-name': action.attrs['android:name'],
+                            })
+
         axml_meta_data_output_file = os.path.join(outputdir, apkpath + '.axml-meta-data.json')
         os.makedirs(os.path.dirname(axml_meta_data_output_file), exist_ok=True)
         with open(axml_meta_data_output_file, 'w') as fp:
@@ -103,6 +125,8 @@ with open(output_file, 'w') as fp:
     json.dump(output, fp, indent=2, sort_keys=True, cls=Encoder)
 with open(attributes_file, 'w') as fp:
     json.dump(sorted(attributes), fp, indent=2)
+with open(receivers_file, 'w') as fp:
+    json.dump(receivers, fp, indent=2, sort_keys=True, cls=Encoder)
 with open(names_file, 'w') as fp:
     json.dump(sorted(d.keys()), fp, indent=2)
 names_with_apk_paths = dict()
