@@ -4,11 +4,13 @@
 # API Key idenfiers and other interesting tidbits.
 # https://github.com/Exodus-Privacy/etip/issues/62
 
+import bs4
 import collections
 import json
 import os
 import re
 import sys
+from androguard.core.bytecodes.apk import get_apkid
 from bs4 import BeautifulSoup
 
 
@@ -20,7 +22,7 @@ class Encoder(json.JSONEncoder):
         return super().default(obj)
 
 
-META_DATA_REGEX = re.compile(r'<\s*meta-data\s+[^>]+>(?:.*?</meta-data>)', flags=re.DOTALL | re.MULTILINE)
+APK_ROOT_DIR = '/data/malware-apks'
 
 output = dict()
 output['errors'] = dict()
@@ -42,34 +44,56 @@ i = 0
 for root, dirs, files in os.walk(datadir):
     print(root)
     for f in files:
+        if not f.endswith('.AndroidManifest.xml'):
+            print('SKIPPING', os.path.join(root, f))
+            continue
         path = os.path.join(root, f)
         apkpath = path[len(basedir) + 20:-20]
+        statinfo = os.stat(path)
+        axml_meta_data_output = {
+            'AndroidManifest.xml_ExtractionTimes': {
+                'ctime': statinfo.st_ctime,
+                'mtime': statinfo.st_mtime,
+            },
+            'meta-data': [],
+        }
         with open(path) as fp:
-            for meta_data in META_DATA_REGEX.findall(fp.read()):
-                bs = BeautifulSoup(meta_data, 'lxml')
-                item = bs.find('meta-data')
-                attributes.update(item.attrs)
+            bs = BeautifulSoup(fp.read(), 'lxml')
+            for meta_data in bs.find_all('meta-data'):
+                attributes.update(meta_data.attrs)
                 line = ''
-                if 'android:name' not in item.attrs.keys():
+                if 'android:name' not in meta_data.attrs.keys():
                     if f not in output['errors']:
                         output['errors'][apkpath] = []
-                    output['errors'][apkpath].append(meta_data)
+                    output['errors'][apkpath].append(str(meta_data))
                     print('ERROR:', f, '<meta-data/> has no android:name:\n', meta_data)
                     continue
-                name = item.attrs['android:name']
+                name = meta_data.attrs['android:name']
+                meta_data_output_dict = {'name': name}
+                axml_meta_data_output['meta-data'].append(meta_data_output_dict)
                 if name not in d:
                     d[name] = dict()
                 if 'apks' not in d[name]:
                     d[name]['apks'] = set()
                 d[name]['apks'].add(apkpath)  # relative path and rstrip .AndroidManifest.xml
-                if 'android:resource' in item.attrs:
+                if 'android:resource' in meta_data.attrs:
                     if 'resources' not in d[name]:
                         d[name]['resources'] = set()
-                    d[name]['resources'].add(item.attrs['android:resource'])
-                if 'android:value' in item.attrs:
+                    resource = meta_data.attrs['android:resource']
+                    meta_data_output_dict['resource'] = resource
+                    d[name]['resources'].add(resource)
+                if 'android:value' in meta_data.attrs:
                     if 'values' not in d[name]:
                         d[name]['values'] = set()
-                    d[name]['values'].add(item.attrs['android:value'])
+                    value = meta_data.attrs['android:value']
+                    meta_data_output_dict['value'] = value
+                    d[name]['values'].add(value)
+
+        axml_meta_data_output_file = os.path.join(outputdir, apkpath + '.axml-meta-data.json')
+        os.makedirs(os.path.dirname(axml_meta_data_output_file), exist_ok=True)
+        with open(axml_meta_data_output_file, 'w') as fp:
+            json.dump(axml_meta_data_output, fp, indent=2, sort_keys=True)
+
     i += 1
     if i > 1000:
         i = 0
