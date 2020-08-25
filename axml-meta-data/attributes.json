@@ -1,4 +1,5 @@
 [
+  "android:authorities",
   "android:configchanges",
   "android:enabled",
   "android:exported",
