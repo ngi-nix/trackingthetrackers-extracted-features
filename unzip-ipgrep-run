@@ -17,7 +17,7 @@ for f in /data/malware-apks/androzoo/top10ish-per-tracker-sdk/*.apk \
     test -e "$output" && continue
     test -d "$(dirname $output)" || mkdir -p "$(dirname $output)"
     # use -c rather than -p to send the filenames to ipgrep
-    { unzip -c "$f" | python3 /data/malware-apks/code/jedisctl/ipgrep/ipgrep.py > "$output" 2>&1; } &
+    { unzip -c "$f" | buffer -m 20M | timeout 10m python3 /data/malware-apks/code/jedisctl/ipgrep/ipgrep.py --timeout 30 --tries 2 --servers 127.0.0.1 > "$output" 2>&1; } &
     i=$((i+1))
     if [ $i -gt 90 ]; then
         date
