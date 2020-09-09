@@ -26,13 +26,14 @@ for f in /data/malware-apks/androzoo/top10ish-per-tracker-sdk/*.apk \
              /data/malware-apks/github.com/*/*/*/*/*/*.apk; do
     outpath=${f#/data/malware-apks/}
     outpath=${outpath#/data/ttt-apks/}
-    output=/data/ttt-apks/extracted-features/ripgrep-faup/${outpath}.unzip-faup.csv
+    output=/data/ttt-apks/extracted-features/ripgrep-faup/${outpath}.ripgrep-faup.csv.gz
     test -e "$output" && continue
     test -d "$(dirname $output)" || mkdir -p "$(dirname $output)"
     # use -c rather than -p to send the filenames to faup
-    { unzip -c "$f" | strings | rg '[^ \t<>#()]{0,4000}\w\.\w\w[^ \t<>#()]{0,4000}' | $faup -p | grep --text -v -e ',no_tld$' -e ',unknown_tld$' | sort -u > "$output" 2>&1; } &
+    # send "n" to unzip to avoid waiting at password prompts
+    { /bin/echo "n" | unzip -c "$f" | strings | rg '[^ \t<>#()]{0,4000}\w\.\w\w[^ \t<>#()]{0,4000}' | cut --characters=1-8000 |  $faup -p | grep --text -v -e ',no_tld$' -e ',unknown_tld$' | sort -u | gzip -9 > "$output" 2>&1; } &
     i=$((i+1))
-    if [ $i -gt `nproc` ]; then
+    if [ $i -gt 60 ]; then
         date
         wait
         i=0
